@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "wb"
+version = "0.0.1"
+description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
+authors = ["Sky Bristol <sky@skybristol.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+python-dotenv = "^1.0.0"
+wikibaseintegrator = "^0.12.4"
+mwclient = "^0.10.1"
+requests = "^2.28.2"
+pandas = "^1.5.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
