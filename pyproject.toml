@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "wb"
+name = "wbmaker"
 version = "0.0.1"
 description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
 authors = ["Sky Bristol <skybristol@gmail.com>"]

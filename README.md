@@ -1,2 +1,2 @@
-# WB
+# WBMaker
 This package helps establish an authenticated connection with a Wikibase instance and provides a number of functions for building items using the wikibaseintegrator package and working with Wikimedia pages (e.g., "item talk" pages) using the mwclient package. While it is simple enough to work with these packages separately, it is helpful to provide a lightweight layer of abstraction for many of the tasks needed in developing bot-based applications and data processing pipelines.
