@@ -9,12 +9,14 @@ from wikibaseintegrator import WikibaseIntegrator, wbi_login
 from wikibaseintegrator import models, datatypes
 from wikibaseintegrator.wbi_enums import WikibaseDatatype, ActionIfExists, WikibaseDatePrecision, WikibaseSnakType
 import mwclient
+from datetime import datetime
 
 class WB:
     def __init__(
         self, 
         config_file: str = 'config.ini',
-        config_section: str = 'wb'):
+        config_section: str = 'wb',
+        cache_props: bool = True):
 
         if not os.path.exists(config_file):
             raise FileNotFoundError("Configuration file not found.")
@@ -44,6 +46,9 @@ class WB:
                 clients_useragent=config[config_section]['bot_user_agent']
             )
             self.mw_site.login(username=config[config_section]['bot_user'], password=config[config_section]['bot_pass'])
+
+        if cache_props:
+            self.props = self.property_map()
             
 
     def _get_domain(self, url):
@@ -94,3 +99,20 @@ class WB:
                 return df[['lookup_value','identifier']].set_index('lookup_value').to_dict()['identifier']
             else:
                 return data_records
+    
+    def property_map(self):
+        q_props = """
+        SELECT ?property ?propertyLabel WHERE {
+        ?property a wikibase:Property .
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+        }
+        """
+
+        props = self.sparql_query(q_props)
+        props['pid'] = props['property'].str.split('/').str[-1]
+
+        return props.set_index('propertyLabel')['pid'].to_dict()
+
+
+    def wb_dt(self, dt=datetime.now()):
+        return dt.strftime("+%Y-%m-%dT%H:%M:%SZ").split('T')[0] + 'T00:00:00Z'
