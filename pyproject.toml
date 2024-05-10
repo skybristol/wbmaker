@@ -2,7 +2,7 @@
 name = "wb"
 version = "0.0.1"
 description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
-authors = ["Sky Bristol <sky@skybristol.com>"]
+authors = ["Sky Bristol <skybristol@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
