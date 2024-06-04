@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from wb.wb import WB
+from wbmaker.wb import WB
 import configparser
 import os
 

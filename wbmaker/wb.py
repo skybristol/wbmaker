@@ -10,6 +10,7 @@ from wikibaseintegrator import models, datatypes
 from wikibaseintegrator.wbi_enums import WikibaseDatatype, ActionIfExists, WikibaseDatePrecision, WikibaseSnakType
 import mwclient
 from datetime import datetime
+from dateutil.parser import parse as parse_date
 
 class WB:
     def __init__(
@@ -102,17 +103,32 @@ class WB:
     
     def property_map(self):
         q_props = """
-        SELECT ?property ?propertyLabel WHERE {
-        ?property a wikibase:Property .
-        SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en". }
+        PREFIX wdt: <https://geokb.wikibase.cloud/prop/direct/>
+
+        SELECT ?property ?propertyLabel ?dataType ?formatter_url
+        WHERE {
+        ?property a wikibase:Property ;
+                  wikibase:propertyType ?dataType .
+        OPTIONAL {
+            ?property wdt:P26 ?formatter_url .
+        }
+        SERVICE wikibase:label { bd:serviceParam wikibase:language "en".}
         }
         """
 
         props = self.sparql_query(q_props)
-        props['pid'] = props['property'].str.split('/').str[-1]
+        props['property'] = props['property'].str.split('/').str[-1]
+        props['dataType'] = props['dataType'].str.split('#').str[-1]
 
-        return props.set_index('propertyLabel')['pid'].to_dict()
-
+        return props.set_index('propertyLabel').to_dict(orient='index')
 
     def wb_dt(self, dt=datetime.now()):
+        '''
+        Converts a string (or datetime object) to a proper Wikibase datetime string
+        '''
+        if not isinstance(dt, datetime):
+            try:
+                dt = parse_date(dt)
+            except:
+                return None
         return dt.strftime("+%Y-%m-%dT%H:%M:%SZ").split('T')[0] + 'T00:00:00Z'
