@@ -17,7 +17,8 @@ class WB:
         self, 
         config_file: str = 'config.ini',
         config_section: str = 'wb',
-        cache_props: bool = True):
+        cache_props: bool = True,
+        is_bot: bool = True):
 
         if not os.path.exists(config_file):
             raise FileNotFoundError("Configuration file not found.")
@@ -37,7 +38,7 @@ class WB:
                 user=config[config_section]['bot_user'],
                 password=config[config_section]['bot_pass']
             )
-            self.wbi = WikibaseIntegrator(login=self.login_instance, is_bot=True)
+            self.wbi = WikibaseIntegrator(login=self.login_instance, is_bot=is_bot)
 
             # Establish site for writing to Mediawiki pages
             self.mw_site = mwclient.Site(
