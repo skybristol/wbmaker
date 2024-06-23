@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.6] - 2024-06-23
+### Changed
+- Increased Pandas version dependency ^2.0.0
+
 ## [0.0.5] - 2024-06-13
 ### Added
 - Added is_bot to WB class as a parameter to handle cases where setting this flag creates a problem for provided credentials that do not have the bot flag set
