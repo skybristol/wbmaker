@@ -11,5 +11,15 @@ or install from source
 
 ```git clone https://github.com/skybristol/wbmaker```
 
-## Config.ini
-The package assumes availability of a config.ini defaulting to the current directory and containing a default [wb] object with configuration details. These can include a bot user and password for authenticated connections. Parameters can be set when calling the WB() class.
+## Environment Variables
+The WB class operates on a set of environment variables that set up and authorize interactions with a Wikibase instance, including Wikidata. These variables are required by one or both of the underlying packages, [wikibaseintegrator](https://github.com/LeMyst/WikibaseIntegrator) and [mwclient](https://github.com/mwclient/mwclient) used in wbmaker. Instantiating the class will prompt for the following basic variables and set them if not supplied in the operating environment.
+
+* WB_URL: base URL for the Wikibase instance (e.g., https://www.wikidata.org/)
+* WB_SPARQL_ENDPOINT: SPARQL endpoint for the Wikibase instance (e.g., https://query.wikidata.org/sparql)
+* MEDIAWIKI_API: Mediawiki API URL for the Wikibase instance (e.g., https://www.wikidata.org/w/api.php)
+* WB_BOT_USER_AGENT: the user agent string to use in actions (e.g., )
+
+If you will be making edits, the following are also required. If these are not provided, the login section of the class will not be invoked, and you will be limited to read-only operations.
+
+* WB_BOT_USER: bot user name authorized to operate on the Wikibase instance
+* WB_BOT_PASS: bot user's password
