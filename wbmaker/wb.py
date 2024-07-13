@@ -1,13 +1,9 @@
 import os
-import configparser
 import requests
 import pandas as pd
-import json
-from urllib.parse import urlparse, parse_qs, quote
+from urllib.parse import urlparse
 from wikibaseintegrator.wbi_config import config as wbi_config
 from wikibaseintegrator import WikibaseIntegrator, wbi_login
-from wikibaseintegrator import models, datatypes
-from wikibaseintegrator.wbi_enums import WikibaseDatatype, ActionIfExists, WikibaseDatePrecision, WikibaseSnakType
 import mwclient
 from datetime import datetime
 from dateutil.parser import parse as parse_date
@@ -15,39 +11,51 @@ from dateutil.parser import parse as parse_date
 class WB:
     def __init__(
         self, 
-        config_file: str = 'config.ini',
-        config_section: str = 'wb',
         cache_props: bool = True,
         is_bot: bool = True):
 
-        if not os.path.exists(config_file):
-            raise FileNotFoundError("Configuration file not found.")
+        # Check for required environment variables
+        required_vars = {
+            'WB_URL': 'Enter the base URL for the Wikibase instance: ',
+            'WB_SPARQL_ENDPOINT': 'Enter the SPARQL endpoint for the Wikibase instance: ',
+            'MEDIAWIKI_API': 'Enter the Mediawiki API URL for the Wikibase instance: ',
+            'WB_BOT_USER_AGENT': 'Enter the user agent string to use in bot actions: '
+        }
 
-        config = configparser.ConfigParser()
-        config.read(config_file)
+        for var, prompt in required_vars.items():
+            if not os.environ.get(var):
+                os.environ[var] = input(prompt)
+
+        # Verify all required environment variables are set
+        missing_vars = [var for var in required_vars if not os.environ.get(var)]
+        if missing_vars:
+            raise EnvironmentError(f"Missing required environment variables: {', '.join(missing_vars)}")
 
         # WikibaseIntegrator config
-        wbi_config['SPARQL_ENDPOINT_URL'] = config[config_section]['sparql_endpoint']
-        wbi_config['USER_AGENT'] = config[config_section]['bot_user_agent']
-        wbi_config['MEDIAWIKI_API_URL'] = config[config_section]['mediawiki_api_url']
-        wbi_config['WIKIBASE_URL'] = config[config_section]['wikibase_url']
+        wbi_config['SPARQL_ENDPOINT_URL'] = os.environ.get('WB_SPARQL_ENDPOINT')
+        wbi_config['USER_AGENT'] = os.environ.get('WB_BOT_USER_AGENT')
+        wbi_config['MEDIAWIKI_API_URL'] = os.environ.get('MEDIAWIKI_API')
+        wbi_config['WIKIBASE_URL'] = os.environ.get('WB_URL')
 
-        # Establish authentication connection to instance
-        if 'bot_user' in config[config_section] and 'bot_pass' in config[config_section]:
+        # Establish mwclient connection
+        self.mw_site = mwclient.Site(
+            self._get_domain(os.environ.get('WB_URL')), 
+            path='/w/', 
+            scheme='https', 
+            clients_useragent=os.environ.get('WB_BOT_USER_AGENT')
+        )
+
+        # Establish authentication connection if bot credentials are provided
+        if os.environ.get('WB_BOT_USER') and os.environ.get('WB_BOT_PASS'):
             self.login_instance = wbi_login.Login(
-                user=config[config_section]['bot_user'],
-                password=config[config_section]['bot_pass']
+                user=os.environ.get('WB_BOT_USER'),
+                password=os.environ.get('WB_BOT_PASS')
             )
             self.wbi = WikibaseIntegrator(login=self.login_instance, is_bot=is_bot)
 
-            # Establish site for writing to Mediawiki pages
-            self.mw_site = mwclient.Site(
-                self._get_domain(config[config_section]['wikibase_url']), 
-                path='/w/', 
-                scheme='https', 
-                clients_useragent=config[config_section]['bot_user_agent']
-            )
-            self.mw_site.login(username=config[config_section]['bot_user'], password=config[config_section]['bot_pass'])
+            self.mw_site.login(username=os.environ.get('WB_BOT_USER'), password=os.environ.get('WB_BOT_PASS'))
+        else:
+            self.wbi = WikibaseIntegrator()
 
         if cache_props:
             self.props = self.property_map()

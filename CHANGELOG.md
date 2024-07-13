@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.7] - 2024-07-10
+### Changed
+- Changed approach on connection details to WB instance to use explicit environment variables
+
 ## [0.0.6] - 2024-06-23
 ### Changed
 - Increased Pandas version dependency ^2.0.0
