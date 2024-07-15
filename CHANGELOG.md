@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.8] - 2024-07-15
+### Changed
+- Added datatypes and enums from wikibaseintegrator as a convenience in building workflows
+
 ## [0.0.7] - 2024-07-10
 ### Changed
 - Changed approach on connection details to WB instance to use explicit environment variables

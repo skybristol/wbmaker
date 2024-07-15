@@ -4,6 +4,7 @@ import pandas as pd
 from urllib.parse import urlparse
 from wikibaseintegrator.wbi_config import config as wbi_config
 from wikibaseintegrator import WikibaseIntegrator, wbi_login
+from wikibaseintegrator import datatypes, wbi_enums
 import mwclient
 from datetime import datetime
 from dateutil.parser import parse as parse_date
@@ -36,6 +37,10 @@ class WB:
         wbi_config['USER_AGENT'] = os.environ.get('WB_BOT_USER_AGENT')
         wbi_config['MEDIAWIKI_API_URL'] = os.environ.get('MEDIAWIKI_API')
         wbi_config['WIKIBASE_URL'] = os.environ.get('WB_URL')
+
+        # Pass along key wikibaseintegrator objects for building workflows
+        self.datatypes = datatypes
+        self.wbi_enums = wbi_enums
 
         # Establish mwclient connection
         self.mw_site = mwclient.Site(
