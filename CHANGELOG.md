@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.9] - 2024-08-09
+### Added
+- New Item class with claim handler function; handles new and updated claims, qualifiers, and references in a more compact way
+
 ## [0.0.8] - 2024-07-15
 ### Changed
 - Added datatypes and enums from wikibaseintegrator as a convenience in building workflows

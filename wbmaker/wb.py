@@ -65,12 +65,10 @@ class WB:
         if cache_props:
             self.props = self.property_map()
             
-
     def _get_domain(self, url):
         parsed_uri = urlparse(url)
         domain = '{uri.netloc}'.format(uri=parsed_uri)
         return domain
-
 
     def sparql_query(self, query: str, endpoint: str = None, output: str = 'dataframe'):
         if not endpoint:
