@@ -10,7 +10,7 @@ class Item():
         self.data = data
         self.identify_data()
 
-        if 'qid' in data:
+        if 'qid' in data and data['qid']:
             self.item = self.wb.wbi.item.get(data['qid'])
         else:
             self.item = self.wb.wbi.item.new()
@@ -32,6 +32,9 @@ class Item():
 
         if commit:
             self.response = self.item.write(summary=summary)
+            if 'item_talk_cache' in data and data['item_talk_cache']:
+                item_talk_page = self.wb.mw_site.pages[f"Item_talk:{self.response.id}"]
+                item_talk_page.save(data['item_talk_cache'], summary="cached content to item talk page")
 
     def _property_type(self, pid=None, prop_name=None):
         if pid is None:
@@ -88,10 +91,11 @@ class Item():
             for claim_obj in self.data['claims']:
                 claim_obj['pid'] = self.wb.props[claim_obj['property_name']]['property']
                 claim_obj['p_datatype'] = self._property_type(claim_obj['pid'])
-                if claim_obj['p_datatype'] == 'TIME':
-                    claim_obj['value'] = self.wb.wb_dt(claim_obj['value'])
-                elif claim_obj['p_datatype'] == 'QUANTITY':
-                    claim_obj['value'] = int(claim_obj['value'])
+                if not claim_obj['value'].startswith('SPECIAL:'):
+                    if claim_obj['p_datatype'] == 'TIME':
+                        claim_obj['value'] = self.wb.wb_dt(claim_obj['value'])
+                    elif claim_obj['p_datatype'] == 'QUANTITY':
+                        claim_obj['value'] = int(claim_obj['value'])
                 claim_obj['statement'] = self.build_statement(
                     pid=claim_obj['pid'],
                     p_datatype=claim_obj['p_datatype'],
@@ -105,10 +109,11 @@ class Item():
                             q_obj['values'] = [q_obj['values']]
                         q_obj['statements'] = []
                         for value in q_obj['values']:
-                            if q_obj['p_datatype'] == 'TIME':
-                                value = self.wb.wb_dt(value)
-                            elif q_obj['p_datatype'] == 'QUANTITY':
-                                value = int(value)
+                            if not value.startswith('SPECIAL:'):
+                                if q_obj['p_datatype'] == 'TIME':
+                                    value = self.wb.wb_dt(value)
+                                elif q_obj['p_datatype'] == 'QUANTITY':
+                                    value = int(value)
                             q_obj['statements'].append(
                                 self.build_statement(
                                     pid=q_obj['pid'],
@@ -124,10 +129,11 @@ class Item():
                             r_obj['values'] = [r_obj['values']]
                         r_obj['statements'] = []
                         for value in r_obj['values']:
-                            if r_obj['p_datatype'] == 'TIME':
-                                value = self.wb.wb_dt(value)
-                            elif r_obj['p_datatype'] == 'QUANTITY':
-                                value = int(value)
+                            if not value.startswith('SPECIAL:'):
+                                if r_obj['p_datatype'] == 'TIME':
+                                    value = self.wb.wb_dt(value)
+                                elif r_obj['p_datatype'] == 'QUANTITY':
+                                    value = int(value)
                             r_obj['statements'].append(
                                 self.build_statement(
                                     pid=r_obj['pid'],
@@ -141,39 +147,53 @@ class Item():
             p_datatype = self._property_type(prop_name)
 
         statement = None
+        snak_type = self.wb.wbi_enums.WikibaseSnakType.KNOWN_VALUE            
+        if value is not None and value == 'SPECIAL:UNKNOWN_VALUE':
+            snak_type = self.wb.wbi_enums.WikibaseSnakType.UNKNOWN_VALUE
+        elif value is not None and value == 'SPECIAL:NO_VALUE':
+            snak_type = self.wb.wbi_enums.WikibaseSnakType.NO_VALUE
+        
         if pid is None:
             pid=self.wb.props[prop_name]['property']
+        
         if p_datatype == 'ITEM':
             statement=self.wb.datatypes.Item(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
         elif p_datatype == 'URL':
             statement=self.wb.datatypes.URL(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
         elif p_datatype == 'EXTERNALID':
             statement=self.wb.datatypes.ExternalID(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
         elif p_datatype == 'STRING':
             statement=self.wb.datatypes.String(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
         elif p_datatype == 'MONOLINGUALTEXT':
             statement=self.wb.datatypes.MonolingualText(
                 prop_nr=pid,
-                language='en'
+                language='en',
+                snaktype=snak_type
             )
         elif p_datatype == 'TIME':
             statement=self.wb.datatypes.Time(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
         elif p_datatype == 'QUANTITY':
             statement=self.wb.datatypes.Quantity(
-                prop_nr=pid
+                prop_nr=pid,
+                snaktype=snak_type
             )
 
-        if value is not None:
+        if value is not None and not value.startswith('SPECIAL:'):
             statement.set_value(value)
 
         return statement
@@ -192,20 +212,32 @@ class Item():
         if 'qualifiers' in claim_data and claim_data['qualifiers']:
             for q_data in claim_data['qualifiers']:
                 if q_data['replace']:
-                    existing_qualifiers = claim.qualifiers.get(q_data['pid'])
-                    if existing_qualifiers:
-                        for q in existing_qualifiers:
-                            claim.qualifiers.remove(q)
+                    remove_qualifiers = []
+                    for qualifier in claim.qualifiers:
+                        if qualifier.get_json()['property'] == q_data['pid']:
+                            remove_qualifiers.append(qualifier)
+                    for q in remove_qualifiers:
+                        try:
+                            claim.qualfiers.remove(q)
+                        except:
+                            claim.qualifiers.clear()
+
                 for statement in q_data['statements']:
                     claim.qualifiers.add(statement)
 
         if 'references' in claim_data and claim_data['references']:
             for r_data in claim_data['references']:
                 if r_data['replace']:
-                    existing_references = claim.references.get(r_data['pid'])
-                    if existing_references:
-                        for r in existing_references:
-                            claim.references.remove(r)
+                    remove_references = []
+                    for reference in claim.references:
+                        if reference.get_json()['property'] == r_data['pid']:
+                            remove_references.append(reference)
+                    for r in remove_references:
+                        try:
+                            claim.qualfiers.remove(r)
+                        except:
+                            claim.qualifiers.clear()
+
                 for statement in r_data['statements']:
                     claim.references.add(statement)
 
