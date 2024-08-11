@@ -8,6 +8,7 @@ from wikibaseintegrator import datatypes, wbi_enums
 import mwclient
 from datetime import datetime
 from dateutil.parser import parse as parse_date
+import networkx as nx
 
 class WB:
     def __init__(
@@ -144,3 +145,94 @@ class WB:
             except:
                 return None
         return dt.strftime("+%Y-%m-%dT%H:%M:%SZ").split('T')[0] + 'T00:00:00Z'
+
+    def wd_path_analysis(self, wd_start, wd_lookup, wd_end='Q35120'):
+        '''
+        This function examines the subclass hierarchy of a Wikidata item to determine if a path exists to a target item.
+        It returns two structures, one representing the shortest path and the other representing the path with the most local links. 
+        that corresponds to the Wikidata entity ID via a same as relationship (or any type of mapping between the two).
+
+        Parameters:
+        wd_start (str): The Wikidata entity ID of the starting item
+        wd_lookup (dict): A dictionary mapping Wikidata entity IDs to entity IDs in another Wikibase
+        wd_end (str): The Wikidata entity ID of the target item (defaults to the high-level 'entity' class in Wikidata)
+        '''
+        start_node = f'http://www.wikidata.org/entity/{wd_start}'
+        end_node = f'http://www.wikidata.org/entity/{wd_end}'
+
+        q_wd = f"""
+        PREFIX wd: <http://www.wikidata.org/entity/>
+        PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+
+        SELECT ?item ?itemLabel ?itemDescription 
+        ?subclass_of ?subclass_ofLabel ?subclass_ofDescription
+        ?next_subclass ?next_subclassLabel ?next_subclassDescription
+        WHERE {{
+            ?item wdt:P279* ?subclass_of .
+            VALUES ?item {{ wd:{wd_start} }}
+            ?subclass_of wdt:P279 ?next_subclass .
+            SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
+        }}
+        """ % {'item': wd_start}
+
+        df = self.sparql_query(q_wd, endpoint='https://query.wikidata.org/sparql')
+        if df is None:
+            return None
+
+        label_lookup = df.set_index('item')['itemLabel'].to_dict()
+        label_lookup.update(df.set_index('subclass_of')['subclass_ofLabel'].to_dict())
+        label_lookup.update(df.set_index('next_subclass')['next_subclassLabel'].to_dict())
+        if end_node not in label_lookup:
+            return None
+        
+        description_lookup = df.set_index('item')['itemDescription'].to_dict()
+        description_lookup.update(df.set_index('subclass_of')['subclass_ofDescription'].to_dict())
+        description_lookup.update(df.set_index('next_subclass')['next_subclassDescription'].to_dict())
+
+        G = nx.Graph()
+
+        nodes = list(set(df['item'].to_list() + df['subclass_of'].to_list() + df['next_subclass'].to_list()))
+        G.add_nodes_from(nodes)
+
+        edges = list(df[['item','subclass_of']].to_records(index=False)) + list(df[['subclass_of','next_subclass']].to_records(index=False))
+        G.add_edges_from(edges)
+
+        shortest_path = nx.shortest_path(G, source=start_node, target=end_node)
+        all_paths = list(nx.all_simple_paths(G, source=start_node, target=end_node))
+
+        path_analysis = {
+            'shortest_path': [
+                {
+                    'wd_entity': item,
+                    'wd_label': label_lookup[item],
+                    'wd_description': description_lookup[item],
+                    'geokb_entity': wd_lookup.get(item, None)
+                }
+                for item in shortest_path
+            ],
+            'alternate_path': None
+        }
+
+        alternate_paths = []
+        for path in all_paths:
+            num_local_links = 0
+            path_list = []
+            for item in path:
+                wb_item = wd_lookup.get(item, None)
+                if wb_item:
+                    num_local_links += 1
+                p = {
+                    'wd_entity': item,
+                    'wd_label': label_lookup[item],
+                    'wd_description': description_lookup[item],
+                    'geokb_entity': wb_item
+                }
+                path_list.append(p)
+            if num_local_links > 1:
+                alternate_paths.append((num_local_links, path_list))
+        
+        if alternate_paths:
+            alternate_paths.sort(key=lambda x: x[0], reverse=True)
+            path_analysis['alternate_path'] = alternate_paths[0][1]
+
+        return path_analysis

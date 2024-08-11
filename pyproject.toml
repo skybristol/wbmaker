@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wbmaker"
-version = "0.0.9"
+version = "0.0.10"
 description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
 authors = ["Sky Bristol <skybristol@gmail.com>"]
 readme = "README.md"
@@ -12,6 +12,7 @@ wikibaseintegrator = "^0.12.4"
 mwclient = "^0.10.1"
 requests = "^2.28.2"
 pandas = "^2.0.0"
+networkx = "^3.0"
 
 [build-system]
 requires = ["poetry-core"]

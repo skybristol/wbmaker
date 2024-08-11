@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.10] - 2024-08-11
+### Added
+- Added the wd_path_analysis function to the WB class to identify possible options for new item classification based on path analysis in Wikidata
+
 ## [0.0.9] - 2024-08-09
 ### Added
 - New Item class with claim handler function; handles new and updated claims, qualifiers, and references in a more compact way
