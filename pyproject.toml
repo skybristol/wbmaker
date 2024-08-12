@@ -4,6 +4,17 @@ version = "0.0.11"
 description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
 authors = ["Sky Bristol <skybristol@gmail.com>"]
 readme = "README.md"
+homepage = "https://github.com/skybristol/wbmaker"
+license = "MIT"
+keywords = ["wikibase", "wikibaseintegrator", "mwclient"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries"
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
