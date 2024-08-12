@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.11] - 2024-08-12
+### Fixed
+- Added parameters to wd_path_analysis function to make calculation of alternate paths optional and set limit on number of paths considered
+
 ## [0.0.10] - 2024-08-11
 ### Added
 - Added the wd_path_analysis function to the WB class to identify possible options for new item classification based on path analysis in Wikidata
