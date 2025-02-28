@@ -133,6 +133,27 @@ class WB:
         props['property'] = props['property'].str.split('/').str[-1]
         props['dataType'] = props['dataType'].str.split('#').str[-1]
 
+        wbi_dtype_class_mapping = {
+            'WikibaseItem': datatypes.Item,
+            'WikibaseProperty': datatypes.Property,
+            'String': datatypes.String,
+            'ExternalId': datatypes.ExternalID,
+            'Time': datatypes.Time,
+            'Quantity': datatypes.Quantity,
+            'Url': datatypes.URL,
+            'Monolingualtext': datatypes.MonolingualText,
+            'GlobeCoordinate': datatypes.GlobeCoordinate,
+            'Math': datatypes.Math,
+            'TabularData': datatypes.TabularData,
+            'MusicalNotation': datatypes.MusicalNotation,
+            'WikibaseLexeme': datatypes.Lexeme,
+            'WikibaseForm': datatypes.Form,
+            'WikibaseSense': datatypes.Sense,
+            'GeoShape': datatypes.GeoShape,
+            'CommonsMedia': datatypes.CommonsMedia
+        }
+        props['wbiClass'] = props['dataType'].map(wbi_dtype_class_mapping)
+
         return props.set_index('propertyLabel').to_dict(orient='index')
 
     def wb_dt(self, dt=datetime.now()):

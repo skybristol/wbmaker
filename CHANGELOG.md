@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.0.12] - 2025-02-28
+### Fixed
+- Added wbiClass to the props structure built for a given connection to house the wikibaseintegrator.datatype for each property. This provides the objects necessary for building claims without having to interpret the type string.
+
 ## [0.0.11] - 2024-08-12
 ### Fixed
 - Added parameters to wd_path_analysis function to make calculation of alternate paths optional and set limit on number of paths considered
