@@ -43,7 +43,7 @@ class DataToInfo:
             if response.status_code == 200:
                 return response.json()
             return None
-        except Exception as e:
+        except requests.RequestException:
             return None
     
     def sparql_to_template_params(
@@ -119,7 +119,7 @@ class DataToInfo:
             if page.exists:
                 return page.text()
             return None
-        except Exception as e:
+        except (AttributeError, KeyError):
             return None
     
     def load_template_as_jinja(self, template_content: str) -> Template:
@@ -250,13 +250,12 @@ class DataToInfo:
         return self.create_wikitext_template(template_name, params)
 
 
-def get_wikidata_item(qid: str, wb: Optional[WB] = None) -> Optional[Dict]:
+def get_wikidata_item(qid: str) -> Optional[Dict]:
     """
     Standalone function to fetch a Wikidata item by QID.
     
     Args:
         qid: Wikidata item ID (e.g., 'Q42')
-        wb: Optional WB instance (not used for this simple fetch)
         
     Returns:
         Dictionary containing the item data, or None if the request fails
@@ -268,7 +267,7 @@ def get_wikidata_item(qid: str, wb: Optional[WB] = None) -> Optional[Dict]:
         if response.status_code == 200:
             return response.json()
         return None
-    except Exception as e:
+    except requests.RequestException:
         return None
 
 
