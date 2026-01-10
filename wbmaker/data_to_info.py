@@ -57,13 +57,28 @@ class DataToInfo:
         The SPARQL query should use the QID as a variable and return key-value
         pairs where keys match template parameter names.
         
+        **Important**: The SPARQL query MUST return two variables named 'param' and 'value':
+        - 'param': The template parameter name (e.g., 'name', 'birth_date')
+        - 'value': The value for that parameter
+        
         Args:
             qid: The Wikidata item ID (e.g., 'Q42')
             sparql_template: SPARQL query template that will use the QID.
                            Should contain {qid} placeholder for substitution.
+                           Must return ?param and ?value variables.
             
         Returns:
             Dictionary mapping template parameter names to values, or None if query fails
+            
+        Example:
+            sparql_query = '''
+            SELECT ?param ?value WHERE {{
+              wd:{qid} rdfs:label ?name .
+              FILTER(LANG(?name) = "en")
+              BIND("name" AS ?param)
+              BIND(?name AS ?value)
+            }}
+            '''
         """
         # Substitute the QID into the SPARQL template
         sparql_query = sparql_template.format(qid=qid)
@@ -82,8 +97,8 @@ class DataToInfo:
         if not bindings:
             return None
         
-        # Convert the first result to a simple key-value dictionary
-        # Assumes the SPARQL query returns parameter names and values
+        # Convert results to a simple key-value dictionary
+        # Requires SPARQL query to return 'param' and 'value' variables
         params = {}
         for binding in bindings:
             # Extract parameter name and value from the binding
@@ -203,6 +218,10 @@ class DataToInfo:
         This is an alternative approach that doesn't use SPARQL but directly maps
         properties from a Wikidata item to template parameters.
         
+        **Note**: This method only extracts the first value for each property.
+        If a property has multiple values (e.g., multiple occupations), only the 
+        first one will be included in the template.
+        
         Args:
             qid: Wikidata item ID (e.g., 'Q42')
             template_name: Name of the Wikipedia template
@@ -225,7 +244,7 @@ class DataToInfo:
         params = {}
         for param_name, property_id in property_mapping.items():
             if property_id in claims:
-                # Get the first claim value (simplified)
+                # Get the first claim value (limitation: does not handle multiple values)
                 claim = claims[property_id][0]
                 if 'mainsnak' in claim and 'datavalue' in claim['mainsnak']:
                     value = claim['mainsnak']['datavalue']['value']
@@ -253,6 +272,10 @@ class DataToInfo:
 def get_wikidata_item(qid: str) -> Optional[Dict]:
     """
     Standalone function to fetch a Wikidata item by QID.
+    
+    This is a convenience function that doesn't require instantiating a 
+    DataToInfo or WB class. For integration with other wbmaker functionality,
+    use the DataToInfo.get_wikidata_item() method instead.
     
     Args:
         qid: Wikidata item ID (e.g., 'Q42')
