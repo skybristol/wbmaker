@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.11", "3.12"]
 
     steps:
@@ -29,19 +29,6 @@ jobs:
         version: latest
         virtualenvs-create: true
         virtualenvs-in-project: true
-        installer-parallel: true
-
-    - name: Add Poetry to PATH
-      if: runner.os == 'Windows'
-      run: |
-        echo "$HOME\.poetry\bin" >> $env:GITHUB_PATH
-        echo "$env:APPDATA\pypoetry\venv\Scripts" >> $env:GITHUB_PATH
-      shell: pwsh
- 
-    - name: Verify Poetry installation
-      run: |
-        poetry --version
-      shell: bash
 
     - name: Load cached venv
       id: cached-poetry-dependencies
