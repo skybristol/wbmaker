@@ -31,13 +31,17 @@ jobs:
         virtualenvs-in-project: true
         installer-parallel: true
 
-    - name: Add Poetry to PATH (Windows)
+    - name: Add Poetry to PATH
       if: runner.os == 'Windows'
-      run: echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
+      run: |
+        echo "$HOME\.poetry\bin" >> $env:GITHUB_PATH
+        echo "$env:APPDATA\pypoetry\venv\Scripts" >> $env:GITHUB_PATH
       shell: pwsh
  
     - name: Verify Poetry installation
-      run: poetry --version
+      run: |
+        poetry --version
+      shell: bash
 
     - name: Load cached venv
       id: cached-poetry-dependencies
