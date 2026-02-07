@@ -41,7 +41,7 @@ jobs:
       if: runner.os == 'Windows'
       run: echo "$env:APPDATA\Python\Scripts" >> $env:GITHUB_PATH
 
-      - name: Install dependencies
+    - name: Install dependencies
       if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
       run: poetry install --no-interaction --no-root
 
