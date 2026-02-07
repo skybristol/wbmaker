@@ -1,25 +1,93 @@
-.ipynb_checkpoints
-**/layers
-**/*.ctrl
-**/*.lwp
-**/logs
-**/user-config.py
-**/user-password.py
-**/node_modules
-**/.env
-.serverless
-response.json
-**/__pycache__
-**/apicache-py3
-.vscode
-**/*.pyc
-**/*.zip
-**/*.tar.gz
-**/*.whl
-**/mrds.csv
-**/families/*
-**/data/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
-harvesters/test.ipynb
-harvesters/test2.ipynb
-harvesters/config.ini
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# Poetry
+# Uncomment the line below if you don't want to commit poetry.lock
+# This is generally NOT recommended - lock file ensures reproducible builds
+# poetry.lock
+
+# Project specific
+response.json
+apicache-py3/
+config.ini
+user-config.py
+user-password.py
+
+# Archives
+*.zip
+*.tar.gz
+*.whl
+
+# Data directories
+data/
+logs/
+
+# Legacy/unused
+layers/
+*.ctrl
+*.lwp
+node_modules/
+.serverless
+mrds.csv
+families/

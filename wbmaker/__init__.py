@@ -1,2 +1,2 @@
-from .wb import WB
 from .item import Item
+from .wb import WB

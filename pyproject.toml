@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "wbmaker"
-version = "0.0.12"
+version = "0.1.0"
 description = "Establishes a connection to a Wikibase instance and provides methods for interacting with it."
 authors = ["Sky Bristol <skybristol@gmail.com>"]
 readme = "README.md"
 homepage = "https://github.com/skybristol/wbmaker"
 license = "MIT"
-keywords = ["wikibase", "wikibaseintegrator", "mwclient"]
+keywords = ["wikibase", "wikidata", "wikibaseintegrator", "mwclient"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -25,6 +25,79 @@ requests = "^2.28.2"
 pandas = "^2.0.0"
 networkx = "^3.0"
 
+[tool.poetry.group.dev.dependencies]
+# Testing
+pytest = "^8.0.0"
+pytest-cov = "^6.0.0"
+pytest-mock = "^3.14.0"
+
+# Code quality
+black = "^24.0.0"
+ruff = "^0.8.0"
+mypy = "^1.13.0"
+
+# Type stubs for dependencies
+types-requests = "^2.32.0"
+pandas-stubs = "^2.2.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false  # Start lenient, can tighten later
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "--verbose",
+    "--cov=wbmaker",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+
+[tool.coverage.run]
+source = ["wbmaker"]
+omit = ["*/tests/*", "*/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
